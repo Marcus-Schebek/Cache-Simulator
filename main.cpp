@@ -1,20 +1,27 @@
-#include "./include/CacheSimulator.h"
+#include "./include/Cache.h"
 #include <iostream>
-#include <fstream>
-#include <vector>
-#include <cmath>
-#include <cstdlib>
-#include <cstdint>
-
 
 int main(int argc, char* argv[]) {
     if (argc != 7) {
-        std::cerr << "Numero de argumentos incorreto. Utilize:\n";
-        std::cerr << "./cache_simulator <nsets> <bsize> <assoc> <substituicao> <flag_saida> <arquivo_de_entrada>\n";
-        return EXIT_FAILURE;
+        std::cerr << "Usage: " << argv[0] << " <nsets> <bsize> <assoc> <substPolicy> <flag> <filename>" << std::endl;
+        return 1;
     }
 
-    CacheSimulator simulator(std::stoi(argv[1]), std::stoi(argv[2]), std::stoi(argv[3]), argv[4], std::stoi(argv[5]), argv[6]);
-    simulator.run();
-    return EXIT_SUCCESS;
+    int nsets = std::stoi(argv[1]);
+    int bsize = std::stoi(argv[2]);
+    int assoc = std::stoi(argv[3]);
+    char substPolicy = argv[4][0];
+    int flag = std::stoi(argv[5]);
+    std::string filename = argv[6];
+
+    try {
+        Cache cache(nsets, bsize, assoc, substPolicy, flag);
+        cache.simulate(filename);
+        cache.printStatistics();
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+        return 1;
+    }
+
+    return 0;
 }

@@ -14,6 +14,7 @@ public:
 private:
     std::ifstream infile;
     uint32_t convertToLittleEndian(uint32_t address);
+    uint32_t convertToBigEndian(uint32_t address);
 };
 
 #endif
