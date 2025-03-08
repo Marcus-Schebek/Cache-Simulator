@@ -1,12 +1,12 @@
-#ifndef CACHEMEMORY_H
-#define CACHEMEMORY_H
+#ifndef CACHECONFIG_H
+#define CACHECONFIG_H
 
 #include <vector>
 #include <cstdint>
 
-class CacheMemory {
+class CacheConfig {
 public:
-    CacheMemory(int nsets, int assoc);
+    CacheConfig(int nsets, int assoc);
 
     bool access(uint32_t tag, uint32_t index, int& hit, int& compulsorio, int& capacidade, int& conflito, int currentTime);
 

@@ -14,7 +14,7 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
 
-    CacheSimulator simulator(atoi(argv[1]), atoi(argv[2]), atoi(argv[3]), argv[4], atoi(argv[5]), argv[6]);
+    CacheSimulator simulator(std::stoi(argv[1]), std::stoi(argv[2]), std::stoi(argv[3]), argv[4], std::stoi(argv[5]), argv[6]);
     simulator.run();
     return EXIT_SUCCESS;
 }

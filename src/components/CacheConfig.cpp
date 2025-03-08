@@ -1,11 +1,11 @@
-#include "../../include/CacheMemory.h"
+#include "../../include/CacheConfig.h"
 #include <climits>
 #include <cstdlib>
 
-CacheMemory::CacheMemory(int nsets, int assoc)
+CacheConfig::CacheConfig(int nsets, int assoc)
     : assoc(assoc), nsets(nsets), tags(nsets * assoc, 0), timestamps(nsets * assoc, 0), valid(nsets * assoc, 0) {}
 
-bool CacheMemory::access(uint32_t tag, uint32_t index, int& hit, int& compulsorio, int& capacidade, int& conflito, int currentTime) {
+bool CacheConfig::access(uint32_t tag, uint32_t index, int& hit, int& compulsorio, int& capacidade, int& conflito, int currentTime) {
     int start = index * assoc;
     int end = start + assoc;
     int emptySlot = -1;
