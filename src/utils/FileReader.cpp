@@ -18,3 +18,7 @@ uint32_t FileReader::nextAddress() {
 uint32_t FileReader::convertToLittleEndian(uint32_t address) {
     return ntohl(address); //Convert Big Endian para Little Endian
 }
+
+uint32_t FileReader::convertToBigEndian(uint32_t address) {
+    return htonl(address); //Convert Little Endian para Big Endian
+}
