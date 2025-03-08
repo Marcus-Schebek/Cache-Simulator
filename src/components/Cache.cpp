@@ -83,8 +83,9 @@ void Cache::replaceLRU(int index, uint32_t tag) {
 
 // Método para simular a cache
 void Cache::simulate(const std::string& filename) {
-    std::vector<uint32_t> addresses = readAddresses(filename);
-    for (uint32_t address : addresses) {
+    FileReader reader(filename); // Usa o FileReader para ler o arquivo
+    while (reader.hasNext()) {
+        uint32_t address = reader.nextAddress(); // Obtém o endereço convertido
         uint32_t tag = getTag(address);
         uint32_t index = getIndex(address);
 
@@ -104,27 +105,6 @@ void Cache::simulate(const std::string& filename) {
         }
         totalAccesses++;
     }
-}
-
-// Método para ler o arquivo de entrada
-std::vector<uint32_t> Cache::readAddresses(const std::string& filename) {
-    std::ifstream file(filename, std::ios::binary);
-    if (!file) {
-        throw std::runtime_error("Failed to open file: " + filename);
-    }
-
-    std::vector<uint32_t> addresses;
-    uint32_t address;
-    while (file.read(reinterpret_cast<char*>(&address), sizeof(address))) {
-        addresses.push_back(convertBigToLittleEndian(address));
-    }
-    return addresses;
-}
-
-// Conversão de Big Endian para Little Endian
-uint32_t Cache::convertBigToLittleEndian(uint32_t value) {
-    return ((value >> 24) & 0xff) | ((value >> 8) & 0xff00) |
-           ((value << 8) & 0xff0000) | ((value << 24) & 0xff000000);
 }
 
 // Método para imprimir estatísticas

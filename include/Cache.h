@@ -1,13 +1,13 @@
 #ifndef CACHE_H
 #define CACHE_H
 
+#include "FileReader.h" // Inclui o FileReader
 #include <vector>
 #include <unordered_map>
 #include <string>
 #include <stdexcept>
 #include <cmath>
 #include <iostream>
-#include <fstream>
 #include <queue>
 #include <list>
 #include <random>
@@ -48,10 +48,6 @@ private:
     void replaceRandom(int index, uint32_t tag);
     void replaceFIFO(int index, uint32_t tag);
     void replaceLRU(int index, uint32_t tag);
-
-    // Método para ler o arquivo de entrada
-    std::vector<uint32_t> readAddresses(const std::string& filename);
-    uint32_t convertBigToLittleEndian(uint32_t value);
 };
 
 #endif // CACHE_H
