@@ -2,10 +2,12 @@
 #include <fstream>
 #include <random>
 #include <algorithm>
+#include <iomanip> // Para std::fixed e std::setprecision
 
 // Construtor
 Cache::Cache(int nsets, int bsize, int assoc, char substPolicy, int flag)
-    : nsets(nsets), bsize(bsize), assoc(assoc), substPolicy(substPolicy), flag(flag) {
+    : nsets(nsets), bsize(bsize), assoc(assoc), substPolicy(substPolicy), flag(flag),
+      hits(0), totalAccesses(0), compulsoryMisses(0), capacityMisses(0), conflictMisses(0) {
     validateParameters();
     initializeCache();
 }
@@ -37,11 +39,18 @@ uint32_t Cache::getIndex(uint32_t address) const {
     return (address >> static_cast<int>(log2(bsize))) & (nsets - 1);
 }
 
-// Processa um miss na cache
 void Cache::handleMiss(int index, uint32_t tag) {
     if (cache[index].size() < assoc) {
+        // Se o conjunto não está cheio, é um miss compulsório
         compulsoryMisses++;
+        cache[index][tag] = true; // Adiciona o novo bloco à cache
+        if (substPolicy == 'F') {
+            fifoQueue[index].push(tag); // Adiciona à fila FIFO
+        } else if (substPolicy == 'L') {
+            lruList[index].push_back(tag); // Adiciona à lista LRU
+        }
     } else {
+        // Se o conjunto está cheio, aplica a política de substituição
         if (substPolicy == 'R') {
             replaceRandom(index, tag);
         } else if (substPolicy == 'F') {
@@ -49,9 +58,21 @@ void Cache::handleMiss(int index, uint32_t tag) {
         } else if (substPolicy == 'L') {
             replaceLRU(index, tag);
         }
-        conflictMisses++;
+
+        // Classifica o miss como de capacidade ou conflito
+        bool isCapacityMiss = true;
+        for (const auto& set : cache) {
+            if (set.size() < assoc) {
+                isCapacityMiss = false;
+                break;
+            }
+        }
+        if (isCapacityMiss) {
+            capacityMisses++;
+        } else {
+            conflictMisses++;
+        }
     }
-    cache[index][tag] = true;
 }
 
 // Política de substituição Random
@@ -59,28 +80,32 @@ void Cache::replaceRandom(int index, uint32_t tag) {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> dis(0, assoc - 1);
-    int victim = dis(gen);
     auto it = cache[index].begin();
-    std::advance(it, victim);
-    cache[index].erase(it);
+    std::advance(it, dis(gen)); // Seleciona um bloco aleatório
+    cache[index].erase(it); // Remove o bloco substituído
+    cache[index][tag] = true; // Adiciona o novo bloco
 }
 
 // Política de substituição FIFO
 void Cache::replaceFIFO(int index, uint32_t tag) {
-    uint32_t victim = fifoQueue[index].front();
-    fifoQueue[index].pop();
-    cache[index].erase(victim);
-    fifoQueue[index].push(tag);
+    uint32_t victim = fifoQueue[index].front(); // Seleciona o bloco mais antigo
+    fifoQueue[index].pop(); // Remove o bloco da fila
+    cache[index].erase(victim); // Remove o bloco da cache
+    fifoQueue[index].push(tag); // Adiciona o novo bloco à fila
+    cache[index][tag] = true; // Adiciona o novo bloco à cache
 }
 
 // Política de substituição LRU
 void Cache::replaceLRU(int index, uint32_t tag) {
+    // Seleciona o bloco menos recentemente usado (primeiro da lista)
     uint32_t victim = lruList[index].front();
-    lruList[index].pop_front();
-    cache[index].erase(victim);
+    lruList[index].pop_front(); // Remove o bloco da lista
+    cache[index].erase(victim); // Remove o bloco da cache
+
+    // Adiciona o novo bloco à cache e à lista LRU
+    cache[index][tag] = true;
     lruList[index].push_back(tag);
 }
-
 // Método para simular a cache
 void Cache::simulate(const std::string& filename) {
     FileReader reader(filename); // Usa o FileReader para ler o arquivo
@@ -90,40 +115,46 @@ void Cache::simulate(const std::string& filename) {
         uint32_t index = getIndex(address);
 
         if (cache[index].find(tag) != cache[index].end()) {
+            // HIT
             hits++;
             if (substPolicy == 'L') {
+                // Atualiza a ordem na LRU: remove a tag e a reinsere no final
                 lruList[index].remove(tag);
                 lruList[index].push_back(tag);
             }
         } else {
+            // MISS
             handleMiss(index, tag);
-            if (substPolicy == 'F') {
-                fifoQueue[index].push(tag);
-            } else if (substPolicy == 'L') {
-                lruList[index].push_back(tag);
-            }
         }
         totalAccesses++;
     }
 }
-
 // Método para imprimir estatísticas
 void Cache::printStatistics() const {
     double hitRate = static_cast<double>(hits) / totalAccesses;
     double missRate = 1.0 - hitRate;
-    double compulsoryMissRate = static_cast<double>(compulsoryMisses) / totalAccesses;
-    double capacityMissRate = static_cast<double>(capacityMisses) / totalAccesses;
-    double conflictMissRate = static_cast<double>(conflictMisses) / totalAccesses;
+
+    // Calcula o total de misses
+    int totalMisses = compulsoryMisses + capacityMisses + conflictMisses;
+
+    // Calcula as taxas de miss em relação ao total de misses
+    double compulsoryMissRate = (totalMisses > 0) ? static_cast<double>(compulsoryMisses) / totalMisses : 0.0;
+    double capacityMissRate = (totalMisses > 0) ? static_cast<double>(capacityMisses) / totalMisses : 0.0;
+    double conflictMissRate = (totalMisses > 0) ? static_cast<double>(conflictMisses) / totalMisses : 0.0;
 
     if (flag == 0) {
         std::cout << "Total de acessos: " << totalAccesses << std::endl;
-        std::cout << "Taxa de hits: " << hitRate * 100 << "%" << std::endl;
-        std::cout << "Taxa de misses: " << missRate * 100 << "%" << std::endl;
-        std::cout << "Taxa de miss compulsório: " << compulsoryMissRate * 100 << "%" << std::endl;
-        std::cout << "Taxa de miss de capacidade: " << capacityMissRate * 100 << "%" << std::endl;
-        std::cout << "Taxa de miss de conflito: " << conflictMissRate * 100 << "%" << std::endl;
+        std::cout << "Taxa de hits: " << std::fixed << std::setprecision(4) << hitRate * 100 << "%" << std::endl;
+        std::cout << "Taxa de misses: " << std::fixed << std::setprecision(4) << missRate * 100 << "%" << std::endl;
+        std::cout << "Taxa de miss compulsório: " << std::fixed << std::setprecision(2) << compulsoryMissRate * 100 << "%" << std::endl;
+        std::cout << "Taxa de miss de capacidade: " << std::fixed << std::setprecision(2) << capacityMissRate * 100 << "%" << std::endl;
+        std::cout << "Taxa de miss de conflito: " << std::fixed << std::setprecision(2) << conflictMissRate * 100 << "%" << std::endl;
     } else {
-        std::cout << totalAccesses << " " << hitRate << " " << missRate << " "
-                  << compulsoryMissRate << " " << capacityMissRate << " " << conflictMissRate << std::endl;
+        std::cout << totalAccesses << " "
+                  << std::fixed << std::setprecision(4) << hitRate << " "
+                  << std::fixed << std::setprecision(4) << missRate << " "
+                  << std::fixed << std::setprecision(2) << compulsoryMissRate << " "
+                  << std::fixed << std::setprecision(2) << capacityMissRate << " "
+                  << std::fixed << std::setprecision(2) << conflictMissRate << std::endl;
     }
 }
