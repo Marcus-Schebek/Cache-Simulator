@@ -83,6 +83,12 @@ void Cache::replaceLRU(int index, uint32_t tag) {
 
 // Método para simular a cache
 void Cache::simulate(const std::string& filename) {
+    
+    std::ifstream file(filename);   //captura erros no arquivo de entrada
+    if (!file.is_open()) {
+        throw std::runtime_error("Erro ao abrir o arquivo de entrada: " + filename);
+    }
+
     FileReader reader(filename); // Usa o FileReader para ler o arquivo
     while (reader.hasNext()) {
         uint32_t address = reader.nextAddress(); // Obtém o endereço convertido
@@ -114,6 +120,11 @@ void Cache::printStatistics() const {
     double compulsoryMissRate = static_cast<double>(compulsoryMisses) / totalAccesses;
     double capacityMissRate = static_cast<double>(capacityMisses) / totalAccesses;
     double conflictMissRate = static_cast<double>(conflictMisses) / totalAccesses;
+
+    if (totalAccesses == 0) {       //previne uma possível divisão por 0 caso o valor do denominador das taxas seja igual a 0
+        std::cerr << "Erro: Nenhum acesso foi realizado à cache." << std::endl;
+        return;
+    }
 
     if (flag == 0) {
         std::cout << "Total de acessos: " << totalAccesses << std::endl;
