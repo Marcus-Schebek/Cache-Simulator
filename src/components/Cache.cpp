@@ -19,7 +19,6 @@ void Cache::validateParameters() {
     }
 }
 
-// Inicialização da cache
 void Cache::initializeCache() {
     cache.resize(nsets);
     if (substPolicy == 'F') {
@@ -75,7 +74,7 @@ void Cache::handleMiss(int index, uint32_t tag) {
     }
 }
 
-// Política de substituição Random
+
 void Cache::replaceRandom(int index, uint32_t tag) {
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -86,7 +85,6 @@ void Cache::replaceRandom(int index, uint32_t tag) {
     cache[index][tag] = true; // Adiciona o novo bloco
 }
 
-// Política de substituição FIFO
 void Cache::replaceFIFO(int index, uint32_t tag) {
     uint32_t victim = fifoQueue[index].front(); // Seleciona o bloco mais antigo
     fifoQueue[index].pop(); // Remove o bloco da fila
@@ -95,7 +93,6 @@ void Cache::replaceFIFO(int index, uint32_t tag) {
     cache[index][tag] = true; // Adiciona o novo bloco à cache
 }
 
-// Política de substituição LRU
 void Cache::replaceLRU(int index, uint32_t tag) {
     // Seleciona o bloco menos recentemente usado (primeiro da lista)
     uint32_t victim = lruList[index].front();
@@ -106,38 +103,30 @@ void Cache::replaceLRU(int index, uint32_t tag) {
     cache[index][tag] = true;
     lruList[index].push_back(tag);
 }
-// Método para simular a cache
+
 void Cache::simulate(const std::string& filename) {
-    FileReader reader(filename); // Usa o FileReader para ler o arquivo
+    FileReader reader(filename);
     while (reader.hasNext()) {
-        uint32_t address = reader.nextAddress(); // Obtém o endereço convertido
+        uint32_t address = reader.nextAddress(); 
         uint32_t tag = getTag(address);
         uint32_t index = getIndex(address);
 
         if (cache[index].find(tag) != cache[index].end()) {
-            // HIT
             hits++;
             if (substPolicy == 'L') {
-                // Atualiza a ordem na LRU: remove a tag e a reinsere no final
                 lruList[index].remove(tag);
                 lruList[index].push_back(tag);
             }
         } else {
-            // MISS
             handleMiss(index, tag);
         }
         totalAccesses++;
     }
 }
-// Método para imprimir estatísticas
 void Cache::printStatistics() const {
     double hitRate = static_cast<double>(hits) / totalAccesses;
     double missRate = 1.0 - hitRate;
-
-    // Calcula o total de misses
     int totalMisses = compulsoryMisses + capacityMisses + conflictMisses;
-
-    // Calcula as taxas de miss em relação ao total de misses
     double compulsoryMissRate = (totalMisses > 0) ? static_cast<double>(compulsoryMisses) / totalMisses : 0.0;
     double capacityMissRate = (totalMisses > 0) ? static_cast<double>(capacityMisses) / totalMisses : 0.0;
     double conflictMissRate = (totalMisses > 0) ? static_cast<double>(conflictMisses) / totalMisses : 0.0;
