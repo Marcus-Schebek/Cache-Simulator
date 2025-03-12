@@ -9,13 +9,6 @@ Execute o seguinte comando para compilar o código:
    g++ main.cpp ./src/components/Cache.cpp ./src/utils/FileReader.cpp -o cache_simulator
 ```
 
-## Estrutura do projeto
-- '/src': Contém o código fonte do projeto.
-- '/src/utils': Contém as funções auxiliares.
-- '/src/components': Contém a lógica principal do simulador.
-- '/include': Contém todos os headers e arquivos referenciados por outras pastas.
-- '/test': Eventuais testes automatizados que podem ser adicionados.
-
 ## Execute 
 Após compilar o projeto, execute o simulador com o seguinte comando:
 ```bash
@@ -39,4 +32,9 @@ Após compilar o projeto, execute o simulador com o seguinte comando:
 ```bash
   ./cache_simulator 256 4 1 R 1 bin_100.bin
   ```
-  
+  ## Estrutura do projeto
+- '/src': Contém o código fonte do projeto.
+- '/src/utils': Contém as funções auxiliares.
+- '/src/components': Contém a lógica principal do simulador.
+- '/include': Contém todos os headers e arquivos referenciados por outras pastas.
+- '/test': Eventuais testes automatizados que podem ser adicionados.
