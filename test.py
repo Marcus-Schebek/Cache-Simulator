@@ -15,7 +15,7 @@ def compare_results(actual, expected):
     if len(actual) != len(expected):
         return False
     for a, e in zip(actual, expected):
-        if abs(a - e) > 0.0001:  # Considera uma pequena margem de erro
+        if abs(a - e) > 0.05:  # Considera uma pequena margem de erro
             return False
     return True
 

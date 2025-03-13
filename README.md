@@ -37,4 +37,3 @@ Após compilar o projeto, execute o simulador com o seguinte comando:
 - '/src/utils': Contém as funções auxiliares.
 - '/src/components': Contém a lógica principal do simulador.
 - '/include': Contém todos os headers e arquivos referenciados por outras pastas.
-- '/test': Eventuais testes automatizados que podem ser adicionados.
